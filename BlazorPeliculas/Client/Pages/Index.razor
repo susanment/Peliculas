@@ -1,0 +1,98 @@
+﻿@page "/"
+@page "/index"
+@*@inject ServicioSingleton singleton*@
+@inject IRepositorio repositorio
+
+<PageTitle>Blazor Películas</PageTitle>
+<AuthorizeView Roles="Admin">
+    <Authorized>
+        <p>Estas aute, @context.User.Identity.Name</p>
+    </Authorized>
+    <NotAuthorized>
+        <p>no estas autorizado para ver esto.</p>
+    </NotAuthorized>
+</AuthorizeView>
+@*<HeadContent>
+    <meta name="description" content="Página para pelis"/>
+</HeadContent>*@
+@*<button @onclick="LimpiarPeliculas">Limpiar películas</button>*@
+@if (EnCartelera is null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <div>
+        @* <BindAfterDemo></BindAfterDemo>
+    <BindGetSetDemo></BindGetSetDemo>
+    <BindEvento></BindEvento>*@
+        <h3> En Cartelera</h3>
+        @* <ListadoPeliculas @ref="" Peliculas="Peliculas">*@
+        <ListadoPeliculas Peliculas="EnCartelera">
+        </ListadoPeliculas>
+    </div>
+}
+@if (FuturosEstrenos is null)
+{
+    <p>Cargando</p>
+}
+else
+{
+    <div>
+        <h3> Próximos Estrenos</h3>
+        @* <ListadoPeliculas @ref="listadoPeliculas" Peliculas="Peliculas">*@
+        <ListadoPeliculas Peliculas="FuturosEstrenos">
+        </ListadoPeliculas>
+    </div>
+}
+@*<button @onclick="AgregarPelicula">Agregar pelicula</button>*@
+@*<div>
+    <h2>Crear película</h2>
+    <EjemploTextbox placeholder="Nombre película"></EjemploTextbox>
+    <EjemploTextbox @attributes="@(new Dictionary<string,object>(){
+
+                                    {"placeholder","nuevo place" },
+                                        {"disabled","true"}
+                                })"></EjemploTextbox>
+    <EjemploTextbox @attributes="EjemploTextboxParam"></EjemploTextbox>
+
+</div>*@
+@code {
+    public List<Pelicula> FuturosEstrenos{ get; set; }
+    public List<Pelicula> EnCartelera{ get; set; }
+    //public ListadoPeliculas listadoPeliculas;
+
+
+    //private void LimpiarPeliculas()
+    //{
+    //    listadoPeliculas.LimpiarPeliculas();
+    //}
+    protected override async Task  OnInitializedAsync()
+    {
+
+        var respuestaHTTP = await repositorio.Get<HomePageDTO>("api/peliculas");
+        if (respuestaHTTP.HttpResponseMessage.IsSuccessStatusCode)
+        {
+            FuturosEstrenos = respuestaHTTP.Response!.ProximosEstrenos;
+            EnCartelera = respuestaHTTP.Response!.PeliculasEnCartelera;
+        }
+        else
+        {
+            Console.WriteLine(respuestaHTTP.HttpResponseMessage.StatusCode);
+        }
+
+
+    }
+    //private Dictionary<string, object> EjemploTextboxParam = new Dictionary<string, object>(){
+
+    //                                {"placeholder","nuevo place 3" },
+    //                                    {"disabled","true"}
+    //                            };
+    
+    //private void AgregarPelicula()
+    //{
+    //    Peliculas.Add(
+    //        new Pelicula{Titulo="Nueva", FechaLanzamiento=DateTime.Today}
+    //    );   
+    //}
+}

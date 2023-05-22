@@ -1,0 +1,57 @@
+﻿@typeparam TitemInList 
+@*Para un listado generico*@
+@if (Listado is null)
+{
+    @if (Cargando is null)
+    {
+        <img src="https://media1.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif"
+             alt="Cargando" />
+    }
+    else
+    {
+        @Cargando
+    }
+}
+else if (Listado.Count == 0)
+{
+    @if (NoHayRegistros is null)
+    {
+        <p>No hay peliculas para mostrar</p>
+    }
+    else
+    {
+        @NoHayRegistros
+    }
+
+}
+else
+{
+    @if (HayRegistros is not null)
+    {
+        @foreach (var elemento in Listado)
+        {
+            @HayRegistros(elemento)
+        }
+    }
+    else
+    {
+        @HayRegistrosCompleto
+    }
+
+}
+@code {
+    [Parameter]
+    public RenderFragment Cargando { get; set; }
+    [Parameter]
+    public RenderFragment NoHayRegistros { get; set; }
+    [Parameter]
+    public RenderFragment<TitemInList> HayRegistros{ get; set; }
+
+    [Parameter]
+    public RenderFragment HayRegistrosCompleto{ get; set; }
+
+
+    [Parameter]
+    [EditorRequired]
+    public List<TitemInList> Listado{ get; set; }
+}

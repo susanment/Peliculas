@@ -1,0 +1,57 @@
+﻿<div class="me-2 mb-2" style="text-align: center">
+    <a href="@urlPelicula">
+        <img src="@PeliculaObject.Poster" alt="poster" style="width: 225px; height:300px;" />
+    </a>
+
+    <p style="max-width:225px; height: 44px; font-size: 15px; font-weight: bold">
+        <a href="@urlPelicula" class="text-decoration-none"> @PeliculaObject.TituloCortado</a>
+    </p>
+    <AuthorizeView Roles="admin"> 
+    <div>
+        <a class="btn btn-info" href="peliculas/editar/@PeliculaObject.IdPelicula"> Editar</a>
+        <button type="button" class="btn btn-danger"
+                @onclick=@(()=> EliminarPelicula.InvokeAsync(PeliculaObject))>
+            Borrar
+        </button>
+    </div>
+    </AuthorizeView>
+    @*    <p>
+    Titulo: <b> @PeliculaObject.Titulo</b>
+    @if (DateTime.Today.Subtract(PeliculaObject.FechaLanzamiento).Days <= 150)
+    {
+    <span style="color: darkred">(¡Nuevo!)</span>
+    }
+    </p>
+    <p>Fecha Lanzamiento: <b>@PeliculaObject.FechaLanzamiento.ToString("dd MMM yyyy")</b></p>
+    <div>
+    @if (MostrarBotones)
+    {*@
+    @*<button @onclick="@(()=> EliminarPelicula.InvokeAsync(PeliculaObject))">Borrar </button>//Expresion explicita*@
+    @* <button @onclick="EliminarPelicula">Borrar </button>
+    <button @onclick="Eliminar">Borrar </button>*@
+    @*}
+
+    </div>*@
+</div>
+@code {
+
+    [Parameter]
+    [EditorRequired]//el parametro es obligatorio
+    public Pelicula PeliculaObject { get; set; }
+    [Parameter]
+    public bool MostrarBotones { get; set; } = false;
+
+    [Parameter]
+    [EditorRequired]
+    public EventCallback<Pelicula> EliminarPelicula { get; set; }
+    private string urlPelicula = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        urlPelicula = $"pelicula/{PeliculaObject.IdPelicula}/{PeliculaObject.Titulo.Replace(" ","_")}";
+    }
+    //void Eliminar()
+    //{
+    //    Console.WriteLine($"Elimina la pelicula {PeliculaObject.Titulo}");
+    //}
+}

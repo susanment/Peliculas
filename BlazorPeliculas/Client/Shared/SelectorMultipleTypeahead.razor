@@ -1,0 +1,74 @@
+﻿@using Blazored.Typeahead
+@typeparam T
+
+<BlazoredTypeahead TValue="T" TItem="T" SearchMethod="SearchMethod"
+                   Value="SampleItem" ValueChanged="ElementoSeleccionado"
+                   ValueExpression="@(()=> SampleItem)">
+    <ResultTemplate>
+        @MyResultTemplate(context)
+    </ResultTemplate>
+    <NotFoundTemplate>
+        Lo sentimos, no hay nada.
+
+    </NotFoundTemplate>
+    <SelectedTemplate>
+
+    </SelectedTemplate>
+</BlazoredTypeahead>
+<ul class="list-group">
+    @foreach (var item in ElementosSeleccionados)
+    {
+        <li draggable="true"
+        @ondragstart="@(()=> HandleDragStar(item))"    
+        @ondragover="@(()=> HandleDragOver(item))"    
+        class="list-group-item list-group-item-action"
+        >
+            @MyListTemplate(item)
+            <span 
+                @onclick="@(()=> ElementosSeleccionados.Remove(item))"
+                class="badge bg-primary rounded-pill" style="cursor:pointer;">
+                X
+            </span>
+        </li>
+    }
+</ul>
+@code {
+    [Parameter, EditorRequired]
+    public Func<string, Task<IEnumerable<T>>> SearchMethod { get; set; } = null!;
+    [Parameter] public List<T> ElementosSeleccionados { get; set; } = new List<T>();
+    [Parameter, EditorRequired] public RenderFragment<T> MyResultTemplate { get; set; } = null!;
+    [Parameter, EditorRequired] public RenderFragment<T> MyListTemplate { get; set; } = null!;
+    T? SampleItem = default(T);
+    T? ItemArrastrado = default(T);
+
+    private void HandleDragStar(T item)
+    {
+        ItemArrastrado = item;
+    }
+
+    private void HandleDragOver(T item)
+    {
+        if (ItemArrastrado is null)
+        {
+            return;
+        }    
+        if (!item.Equals(ItemArrastrado))
+        {
+            var indiceElementoArrastrado = ElementosSeleccionados.IndexOf(ItemArrastrado);
+            var indiceElemento = ElementosSeleccionados.IndexOf(item);
+
+            ElementosSeleccionados[indiceElemento] = ItemArrastrado;
+            ElementosSeleccionados[indiceElementoArrastrado] = item;
+        }
+    }
+    private void ElementoSeleccionado(T item)
+    {
+        if (!ElementosSeleccionados.Any(x => x.Equals(item)))
+        {
+            ElementosSeleccionados.Add(item);
+        }
+
+        SampleItem = default(T);
+    }
+
+}

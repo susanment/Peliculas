@@ -1,0 +1,58 @@
+﻿@inject SweetAlertService sweet;
+<NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigation">
+
+</NavigationLock>
+<EditForm EditContext="editContext" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+
+    <div class="mb-3">
+        <label>Nombre:</label>
+        <div>
+            <InputText class="form-control" @bind-Value="generoFormulario.NombreGenero"></InputText>
+            <ValidationMessage For="@(()=> generoFormulario.NombreGenero)" />
+        </div>
+    </div>
+    <button class="btn btn-success" type="submit">Guardar</button>
+</EditForm>
+@code {
+    private EditContext editContext = null;
+    protected override void OnInitialized()
+    {
+        editContext = new(generoFormulario);
+    }
+    [EditorRequired]
+    [Parameter]
+    public Genero generoFormulario { get; set; }
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback OnValidSubmit { get; set; }
+
+    public bool FormularioPosteadoConExito { get; set; } = false;
+
+    private async Task OnBeforeInternalNavigation(LocationChangingContext context)
+    {
+        var formularioeditado = editContext.IsModified();
+        if (!formularioeditado)
+        {
+            return;
+        }
+        if (FormularioPosteadoConExito)
+        {
+            return;
+        }
+        var resultado = await sweet.FireAsync(new SweetAlertOptions
+            {
+                Title = "Confirmación",
+                Text = "¿Deseas abandonar la página y perder los cambios?",
+                Icon = SweetAlertIcon.Warning,
+                ShowCancelButton = true
+            });
+        var confirmado = !string.IsNullOrEmpty(resultado.Value);
+        if (confirmado)
+        {
+            return;
+        }
+        context.PreventNavigation();
+    }
+}

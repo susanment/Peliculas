@@ -1,0 +1,6 @@
+﻿<input type="text" @attributes="ParametrosAdicionales"/>@*Atributes pasa un conjunto de atributos en un solo momento*@
+@*en blazor los parametros se aplican de derecha a izquierda*@
+@code{
+    [Parameter(CaptureUnmatchedValues =true)]//con parametros arbitrarios se pueden pasar una cantidad no definida de parametros
+    public IDictionary <string,object> ParametrosAdicionales{ get; set; }
+}

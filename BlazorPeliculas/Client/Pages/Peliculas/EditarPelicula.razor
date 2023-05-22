@@ -1,0 +1,77 @@
+﻿@page "/peliculas/editar/{IdPelicula:int}"
+@using Microsoft.AspNetCore.Authorization
+@inject IRepositorio repositorio
+@inject SweetAlertService swal
+@inject NavigationManager navigationManager
+@attribute [Authorize(Roles = "admin")]
+<h3>Editar Pelicula</h3>
+@if (peliculaEditar is null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <FormularioPeliculas Pelicula="peliculaEditar" GenerosNoSeleccionados="GenerosNoSeleccionados"
+                     GenerosSeleccionados="GenerosSeleccionados"
+                     ActoresSeleccionados="actoresSeleccionados"
+                     OnValidSubmit="Editar">
+
+    </FormularioPeliculas>
+}
+
+@code {
+    [Parameter]
+    public int IdPelicula { get; set; }
+
+    Pelicula? peliculaEditar;
+
+    private List<Genero> GenerosNoSeleccionados = new List<Genero>();
+    private List<Genero> GenerosSeleccionados = new List<Genero>();
+    private List<Actor> actoresSeleccionados = new List<Actor>();
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var httpResponse = await repositorio.Get<PeliculaActualizacionDTO>($"api/peliculas/actualizar/{IdPelicula}");
+        if (httpResponse.Error)
+        {
+            if (httpResponse.HttpResponseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                navigationManager.NavigateTo("/");
+            }
+            else
+            {
+                var mensajeError = await httpResponse.ObtenerMensajeError();
+                await swal.FireAsync("Error", mensajeError, SweetAlertIcon.Error);
+            }
+        }
+        else
+        {
+            var modelo = httpResponse.Response!;
+            actoresSeleccionados = modelo.actores;
+            GenerosSeleccionados = modelo.GenerosSeleccionados;
+            GenerosNoSeleccionados = modelo.GenerosNoSeleccionados;
+            peliculaEditar = modelo.Pelicula;
+        }
+    }
+
+    private async Task Editar()
+    {
+   
+            peliculaEditar.Poster = "";
+        
+        var respuestaHTTP = await repositorio.Put("api/peliculas", peliculaEditar);
+        if (respuestaHTTP.Error)
+        {
+            var mensajeError = await respuestaHTTP.ObtenerMensajeError();
+            await swal.FireAsync("Error", mensajeError, SweetAlertIcon.Error);
+        }
+        else
+        {
+            navigationManager.NavigateTo($"pelicula/{IdPelicula}");
+        }
+
+    }
+}

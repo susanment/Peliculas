@@ -1,0 +1,64 @@
+﻿@page "/generos/editar/{IdGeneroRuta:int}"
+@using Microsoft.AspNetCore.Authorization
+@inject NavigationManager navigationManager
+@inject IRepositorio repositorio
+@inject SweetAlertService swal
+@attribute [Authorize(Roles = "admin")]
+<h3>Editar Género</h3>
+@if (generoEditar is null)
+{
+    <p>cargando...</p>
+}
+else
+{
+    <FormularioGenero @ref="formularioGenero" generoFormulario="generoEditar" OnValidSubmit="Editar">
+
+    </FormularioGenero>
+}
+@code {
+    [Parameter]
+    public int IdGeneroRuta { get; set; }
+
+    private Genero generoEditar;
+    private FormularioGenero formularioGenero;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var respuestaHTTP = await repositorio.Get<Genero>($"api/generos/{IdGeneroRuta}");
+        if (respuestaHTTP.Error)
+        {
+            if (respuestaHTTP.HttpResponseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                navigationManager.NavigateTo("generos");
+            }
+            else
+            {
+                var mensajeError = await respuestaHTTP.ObtenerMensajeError();
+                await swal.FireAsync("Error", mensajeError, SweetAlertIcon.Error);
+            }
+        }
+        else
+        {
+            generoEditar = respuestaHTTP.Response;
+        }
+
+    }
+
+    private async Task  Editar()
+    {
+        var respuestaHTTP = await repositorio.Put("api/generos",generoEditar);
+        if (respuestaHTTP.Error)
+        {
+            var mensajeError = await respuestaHTTP.ObtenerMensajeError();
+            await swal.FireAsync("Error", mensajeError, SweetAlertIcon.Error);
+        }
+        else
+        {
+            formularioGenero.FormularioPosteadoConExito = true;
+            navigationManager.NavigateTo("generos");
+        }
+        
+        
+       
+    }
+}

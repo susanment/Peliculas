@@ -1,0 +1,9 @@
+﻿
+<p>
+    <input @bind="Valor" @bind:event="oninput" />@*El evento se dispara cuando se escribe(oninput) por default siempre es onchange*@
+    <p> El valor es: @Valor
+    </p>
+</p>
+@code {
+    private string Valor{ get; set; }
+}

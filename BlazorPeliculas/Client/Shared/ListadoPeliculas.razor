@@ -1,0 +1,76 @@
+﻿@inject IJSRuntime jsRuntime
+@inject NavigationManager navigationManager
+@inject SweetAlertService swal;
+@inject IRepositorio repositorio
+<div style="display: flex; flex-wrap: wrap; align-items: Center">
+
+    <ListadoGenerico Listado="Peliculas">
+        <HayRegistros Context="pelicula">
+            <PeliculaIndividual PeliculaObject="pelicula"
+                                EliminarPelicula="EliminarPelicula"
+                                @key="pelicula.IdPelicula"
+            >
+            </PeliculaIndividual>
+        </HayRegistros>
+    </ListadoGenerico>
+</div>
+@*<input type="checkbox" @bind="VerBotones" />*@
+@*<span> Mostrar botones</span>*@
+
+
+
+
+@code {
+    [Parameter]//deben ser publicos los parametros
+    [EditorRequired]//el parametro es obligatorio
+    public List<Pelicula> Peliculas { get; set; }
+
+    //protected override void OnInitialized()
+    //{
+    //    Console.WriteLine("OnInitialized");
+    //}
+    //protected override void OnParametersSet()
+    //{
+    //    Console.WriteLine("OnParametersSet");
+    //}
+    //protected override void OnAfterRender(bool firstRender)
+    //{
+    //    Console.WriteLine("OnAfterRender: Primera vez: " + firstRender);
+    //}
+    //protected override bool ShouldRender()
+    //{
+    //    Console.WriteLine("ShouldRender");
+    //    return true;
+    //}
+
+    //bool VerBotones = true;
+
+    private async Task EliminarPelicula(Pelicula pelicula)
+    {
+        var confirmado = await jsRuntime.Confirm($"¿Desea borrar la película {pelicula.Titulo} ?");
+        if (confirmado)
+        {
+            var responseHTTP = await repositorio.Delete($"api/peliculas/{pelicula.IdPelicula}");
+            if (responseHTTP.Error)
+            {
+
+                var mensajeError = await responseHTTP.ObtenerMensajeError();
+                await swal.FireAsync("Error", mensajeError, SweetAlertIcon.Error);
+
+            }
+            else
+            {
+                Peliculas.Remove(pelicula);
+            }
+        }
+
+    }
+
+    //public void LimpiarPeliculas()
+    //{
+    //    if (Peliculas is not null)
+    //    {
+    //        Peliculas.Clear();
+    //    }
+    //}
+}

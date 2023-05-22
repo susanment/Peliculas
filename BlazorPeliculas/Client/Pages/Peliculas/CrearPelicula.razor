@@ -1,0 +1,51 @@
+﻿@page "/peliculas/crear"
+@using Microsoft.AspNetCore.Authorization
+@inject NavigationManager navigationManager
+@inject IRepositorio repositorio
+@inject SweetAlertService swal 
+@attribute [Authorize(Roles = "admin")]
+<h3>Crear Pelicula</h3>
+@if (MostrarFormulario)
+{
+    <FormularioPeliculas Pelicula="peliculaCrear"
+                     OnValidSubmit="Crear"
+                     GenerosNoSeleccionados="GenerosNoSeleccionados">
+
+    </FormularioPeliculas>
+}
+else
+{
+    <p>Cargando...</p>
+}
+
+@code {
+    private Pelicula peliculaCrear = new Pelicula();
+    private List<Genero> GenerosNoSeleccionados = new List<Genero>();
+
+    public bool MostrarFormulario { get; set; } = false;
+
+    protected async override Task OnInitializedAsync()
+    {
+        var respuestaHTTP = await repositorio.Get<List<Genero>>("api/generos");
+        GenerosNoSeleccionados = respuestaHTTP.Response;
+
+        MostrarFormulario = true;
+    }
+    async Task Crear()
+    {
+
+        var httpResponse = await  repositorio.Post<Pelicula,int>("api/peliculas", peliculaCrear);
+        if (httpResponse.Error)
+        {
+            var mensajeError = await httpResponse.ObtenerMensajeError();
+            await swal.FireAsync("Error", mensajeError, SweetAlertIcon.Error);
+        }
+        else
+        {
+            var IdPelicula = httpResponse.Response;
+            navigationManager.NavigateTo($"/pelicula/{IdPelicula}/{peliculaCrear.Titulo.Replace(" ","-")}");
+        }
+        
+    }
+
+}
